@@ -6,7 +6,10 @@ Created on Sat Nov 17 14:59:26 2018
 """
 import numpy
 import pandas
-import os
+import nltk
+import collections
+
+nltk.download('punkt')
 
 class InputFile(object):
     #class for the input file and related processing
@@ -26,10 +29,12 @@ class InputFile(object):
         #builds the list of contexts, and creates a new column in the dataframe that contains the combined context for each
         #row. If there are any combinations of contexts that do not exist in the data, they will not be found in the list.
         
-        filepath = "Test values - Sheet1.csv" #for testing purposes
+        
+        filepath = "filteredtweetscombined.csv" #for testing purposes
         #docfile = pandas.read_csv(filepath)
-        contextDiv = pandas.Series(["col1","col2","col4"])
+        
         docfile["plsaContext"] = ""
+        contextDiv = pandas.Series(["account_category","dateSent"])
         
         for context in contextDiv:
             docfile["plsaContext"] = docfile["plsaContext"] + "|" + docfile[context] 
@@ -42,7 +47,34 @@ class InputFile(object):
     
     def buildCorpus(self):
         #creates the corpus of words, and a document matrix
-        wordList = docfile[documentCol].str.split().stack().value_counts()
+        #for testing - documentCol = "content"
+        wordFrame = docfile[documentCol].str.decode('utf-8').str.cat(sep=' ')
+        tokens = nltk.tokenize.word_tokenize(wordFrame)
+        corpus = nltk.FreqDist(tokens)
+
+        corpusFreq = nltk.FreqDist(corpus)
+        
+        tokens[0:10]
+        
+        wordFrame = docfile[documentCol].str.lower().str.split()
+        wordFrame[1]
+        
+        corpus = pandas.Series(wordFrame).value_counts()
+        
+        cWords = collections.Counter()
+        wordFrame.apply(cWords.update)
+        pandas.DataFrame(wordList).stack().value_counts().head(10)
+        wordList.head(10).value_counts()
+        
+        wordFrame2=pandas.DataFrame(wordFrame,columns=['docs'])
+        wordFrame2.head(10)
+        wordFrame.apply(lambda x: pandas.value_counts(x.split(" "))).sum(axis = 0)
+        
+        docfile2 = docfile
+        
+        docfile2[documentCol].apply(lambda x: pandas.value_counts(x.split(" "))).sum(axis = 0)
+
+        wordFrame['docs'].head(10)        
 
 class modelCollection(object):
     #class to hold the models
