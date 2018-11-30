@@ -10,6 +10,9 @@ import nltk
 import collections
 
 nltk.download('punkt')
+nltk.download('stopwords')
+from nltk.tokenize import TweetTokenizer
+from nltk.corpus import stopwords
 
 class InputFile(object):
     #class for the input file and related processing
@@ -43,7 +46,24 @@ class InputFile(object):
         contextList = docfile["plsaContext"].unique()
         
     def prepareDocs(self):
-        #strips unwanted characters, prepares docs for analysis 
+        #escaping html characters
+        self.docfile[self.documentCol] = html.unescape(self.docfile[self.documentCol])
+
+        #tokenise tweet
+        tokenizer = TweetTokenizer()
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].str.replace(';', ' ').str.replace('\'', ' ')
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(lambda x: tokenizer.tokenize(x))
+
+
+        apostophes = {"s":"is", "re":"are"}
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(lambda x: [apostophes[w] if w in apostophes else w for w in x])
+
+        # stop words filtering
+        stop_words = set(stopwords.words('english')) 
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(lambda x: [w for w in x if not w in stop_words])
+
+        # remove url
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(lambda x: [w for w in x if not "https://" in w and not "http://" in w])
     
     def buildCorpus(self):
         #creates the corpus of words, and a document matrix
