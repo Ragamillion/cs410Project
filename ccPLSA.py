@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Nov 17 14:59:26 2018
-
 @author: Tom
+@author: Akhila
 """
 import numpy
 import pandas
@@ -12,22 +12,36 @@ from collections import Counter
 import time
 import scipy.sparse
 from sklearn.feature_extraction.text import CountVectorizer
-
-nltk.download('punkt')
+#nltk.download('punkt')
+#nltk.download('stopwords')
+from nltk.tokenize import TweetTokenizer
+from nltk.corpus import stopwords
+from autocorrect import spell
+from html2text import unescape
 
 class InputFile(object):
-    #class for the input file and related processing
+    # class for the input file and related processing
     filepath = ""
+
     
     def __Init__(self, filepath, documentCol, contextDiv, stopwords, nTopics, backgroundLambda):
         #initialize the object. Here filepath is the path to the data file, documentCol is the column in which the documents
         #are found, contextDiv is an array of the columns that determine the contexts, and stopwords is a .txt file containing
         #the stopwords
+
+        contextList = ""
+
+    def __init__(self, filepath, documentCol, contextDiv, stopwords):
+        # initialize the object. Here filepath is the path to the data file, documentCol is the column in which the documents
+        # are found, contextDiv is an array of the columns that determine the contexts, and stopwords is a .txt file containing
+        # the stopwords
+
         self.filepath = filepath
         self.documentCol = documentCol
         self.contextDiv = contextDiv
-        self.docFile = pandas.read_csv(self.filepath)
+        self.docfile = pandas.read_csv(self.filepath)
         self.stopwords = stopwords
+
         self.nTopics = nTopics
         self.backgroundLambda = backgroundLambda
         
@@ -48,42 +62,50 @@ class InputFile(object):
         docfile["plsaContext"] = docfile["plsaContext"].str[1:]
         contextList = docfile["plsaContext"].unique()
         
-        
-        
+
+
     def prepareDocs(self):
-        #strips unwanted characters, prepares docs for analysis 
-    
+        # escaping html characters
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(unescape)
+
+        # unicode to ascii
+
+        # tokenise tweet
+        tokenizer = TweetTokenizer()
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].str.replace(';', ' ').str.replace('\'', ' ')
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].str.lower()
+
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(lambda x: tokenizer.tokenize(x))
+
+        apostophes = {"s":"is", "re":"are", "t":"not", "ve":"have", "ll":"will", "y":"you", "d":"would"}
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(
+            lambda x: [apostophes[w] if w in apostophes else w for w in x])
+
+        # remove url
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(
+            lambda x: [w for w in x if not "https://" in w and not "http://" in w])
+
+        # spell correction
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(lambda x: [spell(w) for w in x])
+
+        # stop words filtering
+        stop_words = set(stopwords.words('english'))
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(
+            lambda x: [w for w in x if not w in stop_words])
+
+        print(self.docfile[self.documentCol][0:5])
+        # write to csv
+        self.docfile.to_csv("processed_tweets.csv")
+
     def buildCorpus(self):
         #creates the corpus of words, and a document matrix
         documentCol = "content" #for testing - 
-        
+        p = InputFile("tweets.csv", "content", "", "")
+        p.prepareDocs()
         '''
         Tried to create a matrix using pandas dataframes, NLTK tokens, and numpy arrays,
         but all were too slow.
-        
-        #NLTK solution
-        wordFrame = docfile[documentCol].str.decode('utf-8').str.lower().str.cat(sep=' ')
-        #docfile['documentTokens'] = docfile.apply(lambda row: 
-        #       docfile[documentCol].str.decode('utf-8').str.lower(), axis=1)
-         
-        documentTokens = [ nltk.tokenize.casual.casual_tokenize(i.lower()) for i in docfile[documentCol]]
-        
-        tokens = nltk.tokenize.casual.casual_tokenize(wordFrame)
-        corpus = nltk.FreqDist(tokens)
-        cdict = dict(corpus)
-        
-        cFrame = pandas.DataFrame(corpus.most_common(), columns=['Word', 'Frequency'])
-        
-        #build document matrix
-                
 
-        docMatric = numpy.zeros(shape=(len(docfile.index), len(cFrame.index)), dtype=numpy.int8)
-        #docMatrix = pandas.SparseDataFrame(index=docfile.index, columns= xRange( dtype=numpy.int8)
-        
-        for num, doc in enumerate(documentTokens, start=0):
-            for word in doc:
-                docMatric[num][cFrame.index[cFrame['Word']==word]] += 1
-        
         '''
         #using sklearn data types 
         
@@ -95,38 +117,7 @@ class InputFile(object):
         
         
         '''
-        ccounts = corpus.pformat(10)
-        ccounts = corpus.r_Nr()
-        test = pandas.DataFrame(ccounts, columns = ['test'])
-        #corpusFreq = nltk.FreqDist(corpus)
-        
-        tokens[0:10]
-        
-        wordFrame = docfile[documentCol].str.lower().str.split()
-        wordFrame[1]
-        
-        corpus = pandas.Series(wordFrame).value_counts()
-        
-        cWords = collections.Counter()
-        wordFrame.apply(cWords.update)
-        pandas.DataFrame(wordList).stack().value_counts().head(10)
-        wordList.head(10).value_counts()
-        
-        wordFrame2=pandas.DataFrame(wordFrame,columns=['docs'])
-        wordFrame2.head(10)
-        wfsums = wordFrame.apply(lambda x: pandas.value_counts(x.split(" "))).sum(axis = 0)
-        
-        #docfile2 = docfile
-        
-        #docfile2sums = docfile2[documentCol].apply(lambda x: pandas.value_counts(x.split(" "))).sum(axis = 0)
 
-        #wordFrame['docs'].head(10)     
-        
-        #Counter solution
-        wordFrame = docfile[documentCol]
-        wc = collections.Counter(" ".join(wordFrame).split(" "))
-
-        wc.len()
         '''
         
         # background dataset is taken from http://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip
@@ -141,8 +132,10 @@ class InputFile(object):
         #bfreq.freq('the')
         
         
-    def getTopics(self)
+    def getTopics(self):
         
+        
+             
         nTopics = 4 #for testing purposes
         backgroundLambda = .2 #for testing purposes
         
@@ -170,53 +163,35 @@ class InputFile(object):
         
         for z in range(nTopics):
             for n in range(pDocTopic.shape[0]):
+                s = 0
                 for x in docMat[n].nonzero()[1]:
-                    s = 0
                     count = docMat[n,x]
                     s = s + count * pWordDocTopic[n][x][z]
                 pWordTopic[x][z] = s
             nm = numpy.linalg.norm(pWordTopic[z], ord=1)
             pWordTopic[z] = pWordTopic[z]/nm
         
-        for d_index in range(len(self.documents)):
-                for z in range(number_of_topics):
-                    s = 0
-                    for w_index in range(vocabulary_size):
-                        count = term_doc_matrix[d_index][w_index]
-                        s = s + count * self.topic_prob[d_index, w_index, z]
-                    self.document_topic_prob[d_index][z] = s
-#                print self.document_topic_prob[d_index]
-#                assert(sum(self.document_topic_prob[d_index]) != 0)
-            normalize(self.document_topic_prob[d_index])
+        for n in range(pDocTopic.shape[0]):
+            for z in range(nTopics):
+                s = 0
+                for x in docMat[n].nonzero()[1]:
+                    count = docMat[n,x]
+                    s = s + count * pWordDocTopic[n][x][z]
+                pDocTopic[n][z] = s
+            nm = numpy.linalg.norm(pDocTopic[z], ord=1)
+            pDocTopic[z] = pDocTopic[z]/nm
         
-        for iteration in range(10):
-            print "Iteration #" + str(iteration + 1) + "..."
-            print "E step:"
-            for d_index, document in enumerate(self.documents):
-                for w_index in range(vocabulary_size):
-                    prob = self.document_topic_prob[d_index, :] * self.topic_word_prob[:, w_index]
-                    normalize(prob)
-                    self.topic_prob[d_index][w_index] = prob
-            print "M step:"
-            # update P(w | z)
-            for z in range(number_of_topics):
-                for w_index in range(vocabulary_size):
-                    s = 0
-                    for d_index in range(len(self.documents)):
-                        count = term_doc_matrix[d_index][w_index]
-                        s = s + count * self.topic_prob[d_index, w_index, z]
-                    self.topic_word_prob[z][w_index] = s
-                normalize(self.topic_word_prob[z])
-            
-            # update P(z | d)
-            for d_index in range(len(self.documents)):
-                for z in range(number_of_topics):
-                    s = 0
-                    for w_index in range(vocabulary_size):
-                        count = term_doc_matrix[d_index][w_index]
-                        s = s + count * self.topic_prob[d_index, w_index, z]
-                    self.document_topic_prob[d_index][z] = s
-#                print self.document_topic_prob[d_index]
-#                assert(sum(self.document_topic_prob[d_index]) != 0)
-            normalize(self.document_topic_prob[d_index])
+        #for iteration in range(10):
+        #    print "Iteration #" + str(iteration + 1) + "..."
     
+
+        #wordFrame.apply(lambda x: pandas.value_counts(x.split(" "))).sum(axis=0)
+
+        #docfile2 = docfile
+
+        #docfile2[documentCol].apply(lambda x: pandas.value_counts(x.split(" "))).sum(axis=0)
+
+        #wordFrame['docs'].head(10)
+
+
+
