@@ -101,7 +101,8 @@ class InputFile(object):
         stop_words = set(stopwords.words('english'))
         self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(
             lambda x: [w for w in x if not w in stop_words])
-
+        self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(
+            lambda x: ' '.join(x))
         print(self.docfile[self.documentCol][0:5])
         # write to csv
         self.docfile.to_csv("processed_tweets.csv")
