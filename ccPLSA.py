@@ -112,7 +112,8 @@ class InputFile(object):
         self.docfile["sentiment"] = ""
         self.docfile["sentiment"] = self.docfile[self.documentCol].apply(lambda x:  TextBlob(x).sentiment.polarity)
         self.docfile["sentiment"] = self.docfile["sentiment"].apply(lambda x:  "positive" if x > 0 else "neutral" if x == 0 else "negative")
-        print(self.docfile["sentiment"][0:5])
+        self.docfile["plsaContext"] = self.docfile["plsaContext"] + "|" + self.docfile["sentiment"]
+	print(self.docfile["sentiment"][0:5])
 
     def buildCorpus(self):
         #creates the corpus of words, and a document matrix
