@@ -14,6 +14,7 @@ import nltk
 from sklearn.feature_extraction.text import CountVectorizer
 #nltk.download('punkt')
 #nltk.download('stopwords')
+from textblob import TextBlob 
 from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
 from autocorrect import spell
@@ -100,6 +101,13 @@ class InputFile(object):
         print(self.docfile[self.documentCol][0:5])
         # write to csv
         #self.docfile.to_csv("processed_tweets.csv")
+
+    def sentimentAnalysis(self):
+        self.docfile["sentiment"] = ""
+        self.docfile["sentiment"] = self.docfile[self.documentCol].apply(lambda x:  TextBlob(x).sentiment.polarity)
+        self.docfile["sentiment"] = self.docfile["sentiment"].apply(lambda x:  "positive" if x > 0 else "neutral" if x == 0 else "negative")
+        self.docfile["plsaContext"] = self.docfile["plsaContext"] + "|" + self.docfile["sentiment"]
+	print(self.docfile["sentiment"][0:5])
 
     def buildCorpus(self):
         #creates the corpus of words, and a document matrix
