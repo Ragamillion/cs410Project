@@ -6,7 +6,7 @@ Created on Sat Nov 17 14:59:26 2018
 """
 import numpy
 import pandas
-#import nltk
+import nltk
 #import collections
 #from collections import Counter
 #import time
@@ -18,18 +18,12 @@ from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
 from autocorrect import spell
 from html2text import unescape
+import scipy.special
+import gc
 
 class InputFile(object):
     # class for the input file and related processing
     filepath = ""
-
-    
-    def __Init__(self, filepath, documentCol, contextDiv, stopwords, nTopics, backgroundLambda):
-        #initialize the object. Here filepath is the path to the data file, documentCol is the column in which the documents
-        #are found, contextDiv is an array of the columns that determine the contexts, and stopwords is a .txt file containing
-        #the stopwords
-
-        contextList = ""
 
     def __init__(self, filepath, documentCol, contextDiv, stopwords, nTopics):
         # initialize the object. Here filepath is the path to the data file, documentCol is the column in which the documents
@@ -50,27 +44,27 @@ class InputFile(object):
         #row. If there are any combinations of contexts that do not exist in the data, they will not be found in the list.
         
         
-        filepath = "filteredtweets4.csv" #for testing purposes
-        docfile = pandas.read_csv(filepath)
+        #filepath = "filteredtweets4.csv" #for testing purposes
+        #docfile = pandas.read_csv(filepath)
         
-        docfile["plsaContext"] = ""
-        contextDiv = pandas.Series(["account_category","dateSent"])
+        self.docfile["plsaContext"] = ""
+        #self.contextDiv = pandas.Series(["account_category","dateSent"])
         
         #concatenates the values in all the specified context columns for each row/document
-        for context in contextDiv:
-            docfile["plsaContext"] = docfile["plsaContext"] + "|" + docfile[context] 
+        for context in self.contextDiv:
+            self.docfile["plsaContext"] = self.docfile["plsaContext"] + "|" + self.docfile[context] 
         
         #remove leading "|"
-        docfile["plsaContext"] = docfile["plsaContext"].str[1:]
+        self.docfile["plsaContext"] = self.docfile["plsaContext"].str[1:]
         
         #gets list of unique contexts
-        contextList = docfile["plsaContext"].unique().tolist()
+        self.contextList = self.docfile["plsaContext"].unique().tolist()
         
         #Adds column for the index number of the context, for use in future looping
-        docfile["contextNum"] = docfile["plsaContext"].apply(lambda x: contextList.index(x))
+        self.docfile["contextNum"] = self.docfile["plsaContext"].apply(lambda x: self.contextList.index(x))
         
         #Add on the "Common" context that will be used in conjunction with the separate contexts
-        contextList.append("Common")
+        self.contextList.append("Common")
 
 
     def prepareDocs(self):
@@ -95,7 +89,7 @@ class InputFile(object):
             lambda x: [w for w in x if not "https://" in w and not "http://" in w])
 
         # spell correction
-        self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(lambda x: [spell(w) for w in x])
+        #self.docfile[self.documentCol] = self.docfile[self.documentCol].apply(lambda x: [spell(w) for w in x])
 
         # stop words filtering
         stop_words = set(stopwords.words('english'))
@@ -105,13 +99,13 @@ class InputFile(object):
             lambda x: ' '.join(x))
         print(self.docfile[self.documentCol][0:5])
         # write to csv
-        self.docfile.to_csv("processed_tweets.csv")
+        #self.docfile.to_csv("processed_tweets.csv")
 
     def buildCorpus(self):
         #creates the corpus of words, and a document matrix
-        documentCol = "content" #for testing - 
-        p = InputFile("tweets.csv", "content", "", "")
-        p.prepareDocs()
+        #documentCol = "content" #for testing - 
+        #p = InputFile("tweets.csv", "content", "", "")
+        #p.prepareDocs()
         '''
         Tried to create a matrix using pandas dataframes, NLTK tokens, and numpy arrays,
         but all were too slow.
@@ -120,114 +114,129 @@ class InputFile(object):
         #using sklearn data types. The docMat is a sparse matrix of word counts by document.
         #The fns is a unique list of words.
         
-        docVectors = CountVectorizer()
+        self.docVectors = CountVectorizer()
         
-        docMat = docVectors.fit_transform(docfile[documentCol])
+        self.docMat = self.docVectors.fit_transform(self.docfile[self.documentCol])
         
-        fns = docVectors.get_feature_names()
+        self.fns = self.docVectors.get_feature_names()
         
         
         '''
 
         '''
         
-        # background dataset is taken from http://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip
-        #Used in the paper by Go, A., Bhayani, R. and Huang, L., 2009. 
-        #"Twitter sentiment classification using distant supervision". CS224N Project Report, Stanford, 1(12).
-        #backgroundDocs = pandas.read_csv('background tweets.csv')
+        #backgroundTokens = nltk.tokenize.casual.casual_tokenize(self.docFile[self.documentCol].str.decode('utf-8').str.lower().str.cat(sep=' '))
         
-        #backgroundTokens = nltk.tokenize.casual.casual_tokenize(backgroundDocs['text'].str.decode('utf-8').str.lower().str.cat(sep=' '))
-        
-        #bfreq = nltk.FreqDist(backgroundTokens)
-        
+        #self.bfreq = nltk.FreqDist(backgroundTokens)
+              
         #bfreq.freq('the')
         
         
-    def getTopics(self):
+    def getTopics(self, iterations):
         
         
-             
-        nTopics = 4 #for testing purposes
-        #backgroundLambda = .2 #for testing purposes
+        self.iterations = iterations   
+        #nTopics = 4 #for testing purposes
+        #backgroundLambda = .9
         collectionLambda = .25
         nccollectionLambda = .75
-        commonIndex = contextList.index("Common")
+        commonIndex = self.contextList.index("Common")
+        ndocs = len(self.docfile)
+        nwords = len(self.fns)
+        ncontext = len(self.contextList)
         
         #build random arrays to initiate
-        pDocTopic = numpy.random.random(size = (len(docfile), nTopics))
-        pWordTopic = numpy.random.random(size = (len(fns), len(contextList), nTopics))
-        pWordDocTopic = numpy.random.random(size = (len(docfile),len(fns), len(contextList), nTopics))
+        pDocTopic = numpy.random.random(size = (ndocs, self.nTopics))
+        self.pWordTopic = numpy.random.random(size = (nwords, ncontext, self.nTopics))
+        pWordDocTopic = numpy.random.random(size = (ndocs, nwords, ncontext, self.nTopics))
         
         #normalize so that sum of p = 1
         for doc in range(pDocTopic.shape[0]):
-            nm = numpy.linalg.norm(pDocTopic[doc], ord=1)
-            for tp in range(nTopics):
+            nm = sum(pDocTopic[doc])
+            for tp in range(self.nTopics):
                 pDocTopic[doc, tp] /= nm
         
-        for wd in range(pWordTopic.shape[0]):
-            for cn in range(len(contextList)):
-                nm = numpy.linalg.norm(pWordTopic[wd][cn], ord=1)
-                for tp in range(nTopics):
-                    pWordTopic[wd, cn, tp] /= nm		
-		
-        #E-Step: n is doc, x is word
-        #This calculates the probabilities for the "hidden Z variable" for the 
-        #specific context and the Common context. Results are then used in the
-        #M-Step.
-        for n in range(pDocTopic.shape[0]):
-            for x in docMat[n].nonzero()[1]:
-                step1 = (collectionLambda * pWordTopic[x][commonIndex] 
-                    + (nccollectionLambda * pWordTopic[x][docfile["contextNum"][n]]))
-                probVec = pDocTopic[n] * step1
-                nm = numpy.linalg.norm(probVec, ord=1)
-                pWordDocTopic[n][x][docfile["contextNum"][n]] = probVec/nm
-                pWordDocTopic[n][x][commonIndex] = (collectionLambda * pWordTopic[x][commonIndex])/step1
+        for wd in range(self.pWordTopic.shape[0]):
+            for cn in range(ncontext):
+                nm = sum(self.pWordTopic[wd][cn])
+                for tp in range(self.nTopics):
+                    self.pWordTopic[wd, cn, tp] /= nm		
+        gc.collect()
         
-        #M-Step: z is topic, n is doc, x is word. S is the specific context, t is the Common context
-        #this calculates new probabilites for the individual words in each topic.
-        for z in range(nTopics):
-            for n in range(pDocTopic.shape[0]):
-                s = 0
-                t = 0
-                for x in docMat[n].nonzero()[1]:
-                    count = docMat[n,x]
-                    s = s + count * pWordDocTopic[n][x][docfile["contextNum"][n]][z] * (1-pWordDocTopic[n][x][commonIndex][z])
-                    t = t + count * pWordDocTopic[n][x][commonIndex][z] * pWordDocTopic[n][x][docfile["contextNum"][n]][z]
-                pWordTopic[x][docfile["contextNum"][n]][z] = s
-                pWordTopic[x][commonIndex][z] = t
-            nm = numpy.linalg.norm(pWordTopic[:,:,z], ord=1)
-            pWordTopic[:,:,z] = pWordTopic[:,:,z]/nm
+        #set to log values to avoid underflow
+        pDocTopic = numpy.log(pDocTopic)
+        self.pWordTopic = numpy.log(self.pWordTopic)
+        gc.collect()
+        pWordDocTopic = numpy.log(pWordDocTopic)
+        collectionLambda = numpy.log(collectionLambda)
+        nccollectionLambda = numpy.log(nccollectionLambda)
+        #backgroundLambda = numpy.log(backgroundLambda)
         
-        #Second part of the M-Step: n is doc, z is topic. s is to calculate the 
-        #document-specific mixing weight.
-        for n in range(pDocTopic.shape[0]):
-            for z in range(nTopics):
-                s = 0
-                for x in docMat[n].nonzero()[1]:
-                    count = docMat[n,x]
-                    s = s + count * pWordDocTopic[n][x][z][docfile["contextNum"][n]]
-                pDocTopic[n][z] = s
-            nm = numpy.linalg.norm(pDocTopic[z], ord=1)
-            pDocTopic[z] = pDocTopic[z]/nm
-       
-        
-        #To print top 10 words in all contexts/topics
-        for z in range(nTopics):
+             
+        gc.collect()
+        for nIt in range(iterations):
+            print("Iteration number: " + str(nIt+1))
+            print("E-step")
+            #E-Step: n is doc, x is word
+            #This calculates the probabilities for the "hidden Z variable" for the 
+            #specific context and the Common context. Results are then used in
+            #the M-Step.
+            for n in range(ndocs):
+                for x in self.docMat[n].nonzero()[1]:
+                    step1 = numpy.logaddexp((collectionLambda + self.pWordTopic[x][commonIndex]) 
+                        , (nccollectionLambda + self.pWordTopic[x][self.docfile["contextNum"][n]]))
+                    probVec = pDocTopic[n] + step1
+                    nm = scipy.special.logsumexp(probVec)
+                    pWordDocTopic[n][x][self.docfile["contextNum"][n]] = probVec - nm
+                    pWordDocTopic[n][x][commonIndex] = (collectionLambda + self.pWordTopic[x][commonIndex]) - step1
+            
+            print("M-step")
+            #M-Step: z is topic, n is doc, x is word. S is the specific context, t is the Common context
+            #this calculates new probabilites for the individual words in each topic.
+            for z in range(self.nTopics):
+                for n in range(ndocs):
+                    s = 0
+                    t = 0
+                    for x in self.docMat[n].nonzero()[1]:
+                        lcount = numpy.log(self.docMat[n,x])
+                        s = numpy.logaddexp(s , lcount + pWordDocTopic[n][x][self.docfile["contextNum"][n]][z] + numpy.log((1-numpy.exp(pWordDocTopic[n][x][commonIndex][z]))))
+                        t = numpy.logaddexp(t , lcount + pWordDocTopic[n][x][commonIndex][z] + pWordDocTopic[n][x][self.docfile["contextNum"][n]][z])
+                    self.pWordTopic[x][self.docfile["contextNum"][n]][z] = s
+                    self.pWordTopic[x][commonIndex][z] = t
+                nm = scipy.special.logsumexp(self.pWordTopic[:,:,z])
+                self.pWordTopic[:,:,z] = self.pWordTopic[:,:,z]-nm
+            
+            #Second part of the M-Step: n is doc, z is topic. s is to calculate the 
+            #document-specific mixing weight.
+            for n in range(ndocs):
+                for z in range(self.nTopics):
+                    s = 0
+                    for x in self.docMat[n].nonzero()[1]:
+                        lcount = numpy.log(self.docMat[n,x])
+                        s = numpy.logaddexp(s , lcount + pWordDocTopic[n][x][self.docfile["contextNum"][n]][z])
+                    pDocTopic[n][z] = s
+                nm = scipy.special.logsumexp(pDocTopic[z])
+                pDocTopic[z] = pDocTopic[z] - nm
+         
+          
+    def printTopics(self,n):  
+        #To print top n words in all contexts/topics
+        for z in range(self.nTopics):
             print("Topic " + str(z))
-            for c in range(len(contextList)):
-                print("context is " + contextList[c])
-                slist = sorted(range(len(pWordTopic)), key=lambda i: pWordTopic[i,c,z], reverse=True)[:10]
+            for c in range(len(self.contextList)):
+                print("context is " + self.contextList[c])
+                slist = sorted(range(len(self.pWordTopic)), key=lambda i: self.pWordTopic[i,c,z], reverse=True)[:n]
                 for word in slist:
-                    print(fns[word])
+                    print(self.fns[word])
           
 
-        #wordFrame.apply(lambda x: pandas.value_counts(x.split(" "))).sum(axis=0)
 
-        #docfile2 = docfile
-
-        #docfile2[documentCol].apply(lambda x: pandas.value_counts(x.split(" "))).sum(axis=0)
-
-        #wordFrame['docs'].head(10)
-
-
+test1 = InputFile("filteredtweets4.csv", "content", ["account_category","dateSent"],"stopwords.txt", 3)
+test1.buildContext()
+test1.prepareDocs()
+test1.buildCorpus()
+a1 = time.time()
+test1.getTopics(5)
+print(time.time()-a1)
+test1.printTopics(5)
 
