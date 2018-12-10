@@ -6,7 +6,7 @@ Created on Sat Nov 17 14:59:26 2018
 """
 import numpy
 import pandas
-import nltk
+#import nltk
 #import collections
 #from collections import Counter
 #import time
@@ -17,12 +17,12 @@ from sklearn.feature_extraction.text import CountVectorizer
 from textblob import TextBlob 
 from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
-from autocorrect import spell
+#from autocorrect import spell
 from html2text import unescape
 import scipy.special
 import gc
 
-class InputFile(object):
+class ccMix(object):
     # class for the input file and related processing
     filepath = ""
 
@@ -107,6 +107,9 @@ class InputFile(object):
         self.docfile["sentiment"] = self.docfile[self.documentCol].apply(lambda x:  TextBlob(x).sentiment.polarity)
         self.docfile["sentiment"] = self.docfile["sentiment"].apply(lambda x:  "positive" if x > 0 else "neutral" if x == 0 else "negative")
         self.docfile["plsaContext"] = self.docfile["plsaContext"] + "|" + self.docfile["sentiment"]
+        self.contextList = self.docfile["plsaContext"].unique().tolist()
+        self.docfile["contextNum"] = self.docfile["plsaContext"].apply(lambda x: self.contextList.index(x))
+        self.contextList.append("Common")
 	print(self.docfile["sentiment"][0:5])
 
     def buildCorpus(self):
@@ -153,10 +156,11 @@ class InputFile(object):
         nwords = len(self.fns)
         ncontext = len(self.contextList)
         
-        #build random arrays to initiate
+        #build random arrays to initiate - for pWordDocTopic the third dimension
+        #is the context - index 0 for the specific context and index 1 for the Common
         pDocTopic = numpy.random.random(size = (ndocs, self.nTopics))
         self.pWordTopic = numpy.random.random(size = (nwords, ncontext, self.nTopics))
-        pWordDocTopic = numpy.random.random(size = (ndocs, nwords, ncontext, self.nTopics))
+        pWordDocTopic = numpy.random.random(size = (ndocs, nwords, 2, self.nTopics))
         
         #normalize so that sum of p = 1
         for doc in range(pDocTopic.shape[0]):
@@ -195,8 +199,8 @@ class InputFile(object):
                         , (nccollectionLambda + self.pWordTopic[x][self.docfile["contextNum"][n]]))
                     probVec = pDocTopic[n] + step1
                     nm = scipy.special.logsumexp(probVec)
-                    pWordDocTopic[n][x][self.docfile["contextNum"][n]] = probVec - nm
-                    pWordDocTopic[n][x][commonIndex] = (collectionLambda + self.pWordTopic[x][commonIndex]) - step1
+                    pWordDocTopic[n][x][0] = probVec - nm
+                    pWordDocTopic[n][x][1] = (collectionLambda + self.pWordTopic[x][commonIndex]) - step1
             
             print("M-step")
             #M-Step: z is topic, n is doc, x is word. S is the specific context, t is the Common context
@@ -207,11 +211,11 @@ class InputFile(object):
                     t = 0
                     for x in self.docMat[n].nonzero()[1]:
                         lcount = numpy.log(self.docMat[n,x])
-                        s = numpy.logaddexp(s , lcount + pWordDocTopic[n][x][self.docfile["contextNum"][n]][z] + numpy.log((1-numpy.exp(pWordDocTopic[n][x][commonIndex][z]))))
-                        t = numpy.logaddexp(t , lcount + pWordDocTopic[n][x][commonIndex][z] + pWordDocTopic[n][x][self.docfile["contextNum"][n]][z])
+                        with numpy.errstate(divide='ignore'): s = numpy.logaddexp(s , lcount + pWordDocTopic[n][x][0][z] + numpy.log((1-numpy.exp(pWordDocTopic[n][x][1][z]))))
+                        with numpy.errstate(divide='ignore'): t = numpy.logaddexp(t , lcount + pWordDocTopic[n][x][1][z] + pWordDocTopic[n][x][0][z])
                     self.pWordTopic[x][self.docfile["contextNum"][n]][z] = s
                     self.pWordTopic[x][commonIndex][z] = t
-                nm = scipy.special.logsumexp(self.pWordTopic[:,:,z])
+                with numpy.errstate(divide='ignore'): nm = scipy.special.logsumexp(self.pWordTopic[:,:,z])
                 self.pWordTopic[:,:,z] = self.pWordTopic[:,:,z]-nm
             
             #Second part of the M-Step: n is doc, z is topic. s is to calculate the 
@@ -221,9 +225,9 @@ class InputFile(object):
                     s = 0
                     for x in self.docMat[n].nonzero()[1]:
                         lcount = numpy.log(self.docMat[n,x])
-                        s = numpy.logaddexp(s , lcount + pWordDocTopic[n][x][self.docfile["contextNum"][n]][z])
+                        with numpy.errstate(divide='ignore'): s = numpy.logaddexp(s , lcount + pWordDocTopic[n][x][0][z])
                     pDocTopic[n][z] = s
-                nm = scipy.special.logsumexp(pDocTopic[z])
+                with numpy.errstate(divide='ignore'): nm = scipy.special.logsumexp(pDocTopic[z])
                 pDocTopic[z] = pDocTopic[z] - nm
          
           
@@ -239,12 +243,13 @@ class InputFile(object):
           
 
 
-test1 = InputFile("filteredtweets4.csv", "content", ["account_category","dateSent"],"stopwords.txt", 3)
+test1 = ccMix("filteredtweets4.csv", "content", ["account_category","dateSent"],"stopwords.txt", 4)
 test1.buildContext()
 test1.prepareDocs()
 test1.buildCorpus()
-a1 = time.time()
-test1.getTopics(5)
-print(time.time()-a1)
+test1.sentimentAnalysis()
+#a1 = time.time()
+test1.getTopics(10)
+#print(time.time()-a1)
 test1.printTopics(5)
 
