@@ -102,6 +102,10 @@ class ccMix(object):
         self.docfile["sentiment"] = self.docfile[self.documentCol].apply(lambda x:  TextBlob(x).sentiment.polarity)
         self.docfile["sentiment"] = self.docfile["sentiment"].apply(lambda x:  "positive" if x > 0 else "neutral" if x == 0 else "negative")
         self.docfile["plsaContext"] = self.docfile["plsaContext"] + "|" + self.docfile["sentiment"]
+
+        #write context to csv
+        self.docfile.to_csv("context.csv", columns=["plsaContext"])
+
         self.contextList = self.docfile["plsaContext"].unique().tolist()
         self.docfile["contextNum"] = self.docfile["plsaContext"].apply(lambda x: self.contextList.index(x))
         self.contextList.append("Common")
@@ -217,6 +221,14 @@ class ccMix(object):
                     pDocTopic[n][z] = s
                 with numpy.errstate(divide='ignore'): nm = scipy.special.logsumexp(pDocTopic[z])
                 pDocTopic[z] = pDocTopic[z] - nm
+
+        #write computed matrices to files.
+        numpy.save("pDocTopic.npy", pDocTopic)
+        numpy.save("pWordTopic.npy", self.pWordTopic)
+        numpy.save("pWordDocTopic.npy", pWordDocTopic)
+
+        #pDocTopic2 = numpy.load("pDocTopic.npy")
+        #print(pDocTopic2 == pDocTopic)
          
           
     def printTopics(self,n):  
