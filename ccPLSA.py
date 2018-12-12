@@ -43,13 +43,8 @@ class ccMix(object):
     def buildContext(self):
         #builds the list of contexts, and creates a new column in the dataframe that contains the combined context for each
         #row. If there are any combinations of contexts that do not exist in the data, they will not be found in the list.
-        
-        
-        #filepath = "filteredtweets4.csv" #for testing purposes
-        #docfile = pandas.read_csv(filepath)
-        
+                
         self.docfile["plsaContext"] = ""
-        #self.contextDiv = pandas.Series(["account_category","dateSent"])
         
         #concatenates the values in all the specified context columns for each row/document
         for context in self.contextDiv:
@@ -110,7 +105,7 @@ class ccMix(object):
         self.contextList = self.docfile["plsaContext"].unique().tolist()
         self.docfile["contextNum"] = self.docfile["plsaContext"].apply(lambda x: self.contextList.index(x))
         self.contextList.append("Common")
-	print(self.docfile["sentiment"][0:5])
+        #print(self.docfile["sentiment"][0:5])
 
     def buildCorpus(self):
         #creates the corpus of words, and a document matrix
@@ -119,23 +114,17 @@ class ccMix(object):
         #p.prepareDocs()
         '''
         Tried to create a matrix using pandas dataframes, NLTK tokens, and numpy arrays,
-        but all were too slow.
-
-        '''
-        #using sklearn data types. The docMat is a sparse matrix of word counts by document.
-        #The fns is a unique list of words.
-        
+        but all were too slow. Settled on 
+        using sklearn data types. The docMat is a sparse matrix of word counts by document.
+        the fns is a unique list of words.
+        '''       
         self.docVectors = CountVectorizer()
         
         self.docMat = self.docVectors.fit_transform(self.docfile[self.documentCol])
         
         self.fns = self.docVectors.get_feature_names()
         
-        
-        '''
-
-        '''
-        
+              
         #backgroundTokens = nltk.tokenize.casual.casual_tokenize(self.docFile[self.documentCol].str.decode('utf-8').str.lower().str.cat(sep=' '))
         
         #self.bfreq = nltk.FreqDist(backgroundTokens)
@@ -147,7 +136,6 @@ class ccMix(object):
         
         
         self.iterations = iterations   
-        #nTopics = 4 #for testing purposes
         #backgroundLambda = .9
         collectionLambda = .25
         nccollectionLambda = .75
@@ -248,8 +236,18 @@ test1.buildContext()
 test1.prepareDocs()
 test1.buildCorpus()
 test1.sentimentAnalysis()
-#a1 = time.time()
-test1.getTopics(10)
-#print(time.time()-a1)
-test1.printTopics(5)
+test1.getTopics(25)
+test1.printTopics(10)
 
+'''
+file_name = r'topicresults.txt'
+text_file = open(file_name, 'w')
+for z in range(test1.nTopics):
+    text_file.write("Topic " + str(z) + '\r\n')
+    for c in range(len(test1.contextList)):
+        text_file.write("context is " + test1.contextList[c] + '\r\n')
+        slist = sorted(range(len(test1.pWordTopic)), key=lambda i: test1.pWordTopic[i,c,z], reverse=True)[:10]
+        for word in slist:
+            text_file.write(test1.fns[word] + '\r\n')
+text_file.close()
+'''

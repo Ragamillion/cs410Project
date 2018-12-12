@@ -1,0 +1,576 @@
+Topic 0
+context is LeftTroll|Before June 9|positive
+fitness
+obama
+use
+times
+shirt
+making
+lying
+prince
+000
+great
+context is LeftTroll|Before June 9|negative
+high
+see
+mad
+try
+like
+stop
+past
+malcolm
+brief
+cares
+context is LeftTroll|Before June 9|neutral
+helped
+eurovision
+24
+spotify
+proposed
+big
+beat
+rate
+com
+never
+context is LeftTroll|On or After June 9|positive
+white
+internet
+culture
+among
+fight
+money
+22
+mobile
+shooting
+bernie
+context is LeftTroll|On or After June 9|negative
+government
+drug
+got
+putting
+let
+fight
+son
+happened
+voteblue
+us
+context is LeftTroll|On or After June 9|neutral
+record
+day
+blackness
+european
+13
+brief
+helped
+son
+abuse
+looking
+context is RightTroll|Before June 9|positive
+try
+words
+always
+veteran
+use
+terrorism
+michael
+ever
+obama
+brave
+context is RightTroll|Before June 9|neutral
+stands
+together
+campaign
+rt
+day
+died
+2016
+happen
+police
+clinton
+context is RightTroll|Before June 9|negative
+try
+police
+fight
+still
+real
+life
+black
+putting
+us
+running
+context is RightTroll|On or After June 9|neutral
+shows
+level
+life
+friends
+words
+city
+army
+say
+love
+state
+context is RightTroll|On or After June 9|negative
+gun
+one
+country
+mental
+police
+pray
+women
+know
+black
+gives
+context is RightTroll|On or After June 9|positive
+kids
+change
+war
+year
+black
+one
+crimes
+reason
+damn
+white
+context is Common
+viral
+mad
+got
+cocaine
+reuters
+use
+try
+level
+among
+son
+Topic 1
+context is LeftTroll|Before June 9|positive
+cast
+amid
+born
+together
+vs
+gun
+friends
+tomorrow
+book
+news
+context is LeftTroll|Before June 9|negative
+got
+men
+proposed
+staywoke
+state
+bernie
+pay
+photo
+family
+pro
+context is LeftTroll|Before June 9|neutral
+herb
+williams
+eric
+milwaukee
+words
+reuters
+thing
+old
+water
+young
+context is LeftTroll|On or After June 9|positive
+year
+higher
+via
+lot
+life
+dc
+stage
+great
+reach
+2016
+context is LeftTroll|On or After June 9|negative
+oil
+clinton
+photo
+little
+veteran
+stop
+lot
+science
+fuck
+lies
+context is LeftTroll|On or After June 9|neutral
+jordan
+cut
+department
+drug
+room
+today
+silent
+country
+cannot
+putting
+context is RightTroll|Before June 9|positive
+22
+true
+gun
+come
+like
+keep
+awesome
+obama
+top
+get
+context is RightTroll|Before June 9|neutral
+freedom
+throughout
+happen
+germany
+us
+silent
+fight
+iraq
+never
+grow
+context is RightTroll|Before June 9|negative
+thank
+look
+life
+anyone
+killed
+black
+see
+america
+real
+running
+context is RightTroll|On or After June 9|neutral
+culture
+make
+need
+know
+child
+say
+officer
+like
+asked
+used
+context is RightTroll|On or After June 9|negative
+need
+gives
+people
+terrorism
+even
+hillary
+pray
+right
+2016
+country
+context is RightTroll|On or After June 9|positive
+one
+say
+need
+year
+army
+full
+state
+school
+damn
+best
+context is Common
+gives
+policy
+clinton
+sweden
+via
+see
+born
+higher
+increased
+hero
+Topic 2
+context is LeftTroll|Before June 9|positive
+men
+running
+call
+shooting
+fox
+shirt
+dear
+13
+may
+always
+context is LeftTroll|Before June 9|negative
+accident
+staywoke
+natural
+killed
+teach
+proposed
+600jefe
+trump
+young
+may
+context is LeftTroll|Before June 9|neutral
+first
+16
+give
+rate
+45
+best
+paying
+damn
+hurt
+fight
+context is LeftTroll|On or After June 9|positive
+site
+hot
+first
+news
+sweden
+years
+better
+people
+woman
+families
+context is LeftTroll|On or After June 9|negative
+pay
+driver
+bernie
+brief
+watch
+likely
+son
+look
+fox
+fire
+context is LeftTroll|On or After June 9|neutral
+rate
+next
+istanbul
+bill
+la
+blood
+change
+50
+support
+educate
+context is RightTroll|Before June 9|positive
+stand
+best
+mt
+year
+need
+children
+devoted
+calls
+awesome
+self
+context is RightTroll|Before June 9|neutral
+cruz
+money
+patriot
+rt
+party
+balance
+ryan
+obama
+woman
+media
+context is RightTroll|Before June 9|negative
+pay
+media
+things
+look
+stop
+make
+future
+stage
+forget
+america
+context is RightTroll|On or After June 9|neutral
+join
+praise
+us
+murdered
+kids
+one
+movement
+times
+veteran
+shows
+context is RightTroll|On or After June 9|negative
+believe
+right
+got
+gives
+police
+one
+nothing
+years
+us
+even
+context is RightTroll|On or After June 9|positive
+ceremony
+today
+gives
+clinton
+right
+rest
+trying
+dear
+one
+true
+context is Common
+productivity
+site
+yet
+cocaine
+hot
+teach
+sweden
+600jefe
+viral
+host
+Topic 3
+context is LeftTroll|Before June 9|positive
+georgia
+big
+clinton
+give
+22
+right
+different
+policy
+got
+stephen
+context is LeftTroll|Before June 9|negative
+behind
+major
+campaign
+brilliance
+made
+one
+little
+sued
+official
+mother
+context is LeftTroll|Before June 9|neutral
+muhammadali
+organizing
+lying
+30
+report
+today
+means
+em
+record
+policy
+context is LeftTroll|On or After June 9|positive
+state
+13
+hot
+aaihs
+running
+things
+back
+messages
+likely
+visits
+context is LeftTroll|On or After June 9|negative
+reuters
+kid
+jones
+single
+made
+sad
+nfl
+mad
+national
+defense
+context is LeftTroll|On or After June 9|neutral
+want
+paid
+slavery
+women
+shirt
+linq
+lot
+school
+self
+16
+context is RightTroll|Before June 9|positive
+give
+sleep
+love
+wants
+safe
+right
+innocent
+winning
+call
+lay
+context is RightTroll|Before June 9|neutral
+media
+vote
+woman
+believe
+america
+birther
+stage
+consider
+freedom
+country
+context is RightTroll|Before June 9|negative
+anyone
+could
+food
+stop
+war
+behind
+fight
+running
+media
+thank
+context is RightTroll|On or After June 9|neutral
+al
+orlando
+national
+football
+never
+quite
+texas
+man
+one
+agenda
+context is RightTroll|On or After June 9|negative
+killed
+terrorism
+even
+black
+gives
+people
+military
+think
+need
+america
+context is RightTroll|On or After June 9|positive
+gold
+hero
+keep
+men
+us
+reason
+say
+today
+damn
+good
+context is Common
+official
+brilliance
+al
+joy
+baltimore
+behind
+real
+fight
+single
+13

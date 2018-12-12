@@ -34,9 +34,39 @@ this repository)
 nTopics is an integer representing the number of topics to create
 
 The methods of the ccMix object are as follows:
-buildContext() - required and must be run first
-prepareDocs() - optional 
-sentimentAnalysis()
-buildCorpus()
-getTopics()
-printTopics(n)
+buildContext() - required - Must be run first. Takes the list of context columns provided by the user
+    and combines the values within those columns to create a single context for each row.
+prepareDocs() - optional - performs document clean-up and preperation for analysis, including
+    removing stop words. Focused on tweet documents.
+sentimentAnalysis() - optional - Performs sentiment analysis on each document and adds on the
+    resulting sentiment to the document's context. Sentiment values are "Positive", "Negative",
+    and "Neutral".
+buildCorpus() - required - Creates the matrix of word counts for the document collection.
+getTopics(iterations) - required - Creates the topic models and performs the analysis. The iterations
+    parameter controls how many EM iterations are performed. We recommend doing at least 10.
+printTopics(n) - optional - Prints the top n words for each context and model by probability.
+
+An example of using this tool can be found in the code below, using the provided .csv file:
+
+test1 = ccMix("filteredtweets4.csv", "content", ["account_category","dateSent"],"stopwords.txt", 4)
+test1.buildContext()
+test1.prepareDocs()
+test1.buildCorpus()
+test1.sentimentAnalysis()
+test1.getTopics(25)
+test1.printTopics(10)
+
+
+
+Future development:
+Currently the tool implements the cc-Mix model without the proposed Background component,
+and instead relys on removing common words. A future implementation could add in this feature.
+
+Dr. Zhai has mentioned that it is possible to combine the E and M steps into a single loop through
+the corpus, which would remove the necessity of storing the Document-Word-Topic probabilities. 
+This very large matrix is a big memory drain and so future work on this tool could revamp the
+algorithm to free up memory.
+
+Twitter documents are rarely long enough to have a topic word multiple times. As a result,
+it would be interesting to explore a binary tracking of word presence instead of word count.
+This could free up memory and reduce computation time if implemented well.
