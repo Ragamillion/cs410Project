@@ -6,6 +6,7 @@ Created on Sat Nov 17 14:59:26 2018
 """
 import numpy
 import pandas
+import json
 #import nltk
 #import collections
 #from collections import Counter
@@ -127,6 +128,12 @@ class ccMix(object):
         self.docMat = self.docVectors.fit_transform(self.docfile[self.documentCol])
         
         self.fns = self.docVectors.get_feature_names()
+        with open('fns.txt', 'w') as filehandle:  
+            json.dump(self.fns, filehandle)
+        
+
+        #with open('fns.txt', 'r') as filehandle:  
+        #    fns2 = json.load(filehandle)
         
               
         #backgroundTokens = nltk.tokenize.casual.casual_tokenize(self.docFile[self.documentCol].str.decode('utf-8').str.lower().str.cat(sep=' '))
