@@ -5,9 +5,9 @@ Tom Phelan and Akhila Prodduturi
 This is a context based topic analysis tool for use with collections of tweets, written in Python.
 The tool has been developed using the cc-Mix model proposed in the paper "A cross-collection
 mixture model for comparative text mining" by ChengXiang Zhai, Atulya Velivelli, and Bei Yu, 2004.
-The goalis to allow the user to provide a csv file with the documents in one column and the contextual
+The goal is to allow the user to provide a csv file with the documents in one column and the contextual
 variables in a series of other columns in the dataset. The tool then allows the user to clean up
-the documents and analyse them. It produces a user-specified number of topic models.
+the documents and analyse them. It produces a user-specified number of topic models and word distributions for those topics.
 
 Requirements:   
 This tool requires following packages to be installed in Python.  
