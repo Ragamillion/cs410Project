@@ -21,7 +21,7 @@ class analysis(object):
     for i in range(len(self.context["contextNum"])):
       idx = self.context["contextNum"][i]
       maxTopicsPerContext[idx] = maxTopicsPerContext[idx] + self.pDocTopic[i]
-    print(maxTopicsPerContext)
+    #print(maxTopicsPerContext)
     #print(self.pDocTopic)
     
     contextWordList = []
@@ -40,8 +40,8 @@ class analysis(object):
         topicWordList.append(wordList)
       contextWordList.append(topicWordList)
     self.result["most tweeted topics"] = contextWordList
-    self.result.to_csv("result.csv")
-    print(contextWordList)
+    self.result.to_csv("result.csv", encoding='utf8')
+    #print(contextWordList)
 
 p = analysis("pDocTopic.npy", "pWordTopic.npy", "context.csv", "fns.txt", 4, 5)
 p.prepareResults()
