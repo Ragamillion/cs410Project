@@ -56,6 +56,8 @@ test1.sentimentAnalysis()
 test1.getTopics(25)  
 test1.printTopics(10)  
 
+analysis.py is added to this tool to present the results in a tabular format. In this scenario we've chosen to display top 4 topics for each context and top 5 most tweeted topic words for those topics.
+
 
 
 Future development:  
